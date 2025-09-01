@@ -1,9 +1,9 @@
-// server.js
+// server.js (Versão para Produção no Render com PostgreSQL)
 const express = require('express');
 const http = require('http');
 const path = require('path');
 const WebSocket = require('ws');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg'); // Usa o driver do PostgreSQL
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -13,11 +13,51 @@ app.use(express.json());
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-const JWT_SECRET = 'este-e-o-segredo-final-e-super-seguro-do-flash-cases';
+// Lê o segredo JWT das variáveis de ambiente do Render
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-para-ambiente-local';
 
-// --- DADOS COMPLETOS - 10 CAIXAS ---
+// --- BANCO DE DADOS POSTGRESQL ---
+// O Render fornecerá a DATABASE_URL como uma variável de ambiente
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
+
+const setupDatabase = async () => {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username TEXT UNIQUE NOT NULL,
+                "passwordHash" TEXT NOT NULL,
+                balance NUMERIC(10, 2) NOT NULL DEFAULT 0.50
+            );
+        `);
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS inventory (
+                id SERIAL PRIMARY KEY,
+                "userId" INTEGER REFERENCES users(id),
+                "itemId" TEXT,
+                "itemName" TEXT,
+                "itemImageUrl" TEXT,
+                "itemValue" NUMERIC(10, 2),
+                rarity TEXT,
+                "openedAt" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('Banco de dados PostgreSQL verificado/criado com sucesso.');
+    } catch (err) {
+        console.error('Erro ao criar tabelas do banco de dados:', err);
+    }
+};
+
+setupDatabase();
+
+// --- DADOS DAS 10 CAIXAS ---
 const boxes = [
-    { id: "box_cobalt", name: "Cobalt Starter", price: 0.10, imageUrl: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/assets/Package/Package.png", drops: [
+{ id: "box_cobalt", name: "Cobalt Starter", price: 0.10, imageUrl: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/assets/Package/Package.png", drops: [
         { id: "c_01", name: "Sticker | Glitch", rarity: "common", weight: 60, value: 0.05, imageUrl: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/assets/Ghost/Ghost.png" },
         { id: "u_01", name: "P250 | Digital Mesh", rarity: "uncommon", weight: 25, value: 0.45, imageUrl: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/assets/Pistol/Pistol.png" },
         { id: "r_01", name: "AK-47 | Lazarus", rarity: "rare", weight: 12, value: 18.00, imageUrl: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/assets/Alien/Alien.png" },
@@ -70,17 +110,6 @@ const boxes = [
     ]},
 ];
 
-
-// --- BANCO DE DADOS ---
-const db = new sqlite3.Database('./database.sqlite', (err) => {
-    if (err) return console.error("Erro ao conectar ao DB:", err.message);
-    console.log('Conectado ao banco de dados SQLite.');
-    db.serialize(() => {
-        db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE NOT NULL, passwordHash TEXT NOT NULL, balance REAL NOT NULL DEFAULT 0.50)`);
-        db.run(`CREATE TABLE IF NOT EXISTS inventory (id INTEGER PRIMARY KEY AUTOINCREMENT, userId INTEGER, itemId TEXT, itemName TEXT, itemImageUrl TEXT, itemValue REAL, rarity TEXT, openedAt DATETIME DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY(userId) REFERENCES users(id))`);
-    });
-});
-
 // --- MIDDLEWARE DE AUTENTICAÇÃO ---
 const authMiddleware = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
@@ -92,41 +121,73 @@ const authMiddleware = (req, res, next) => {
     });
 };
 
-// --- ROTAS DA API ---
-app.post('/api/signup', (req, res) => {
+// --- ROTAS DA API (convertidas para async/await com PostgreSQL) ---
+
+app.post('/api/signup', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password || password.length < 4) return res.status(400).json({ message: 'Usuário e senha (mín. 4 caracteres) são obrigatórios.' });
-    const passwordHash = bcrypt.hashSync(password, 10);
-    db.run('INSERT INTO users (username, passwordHash) VALUES (?, ?)', [username, passwordHash], function (err) {
-        if (err) return res.status(409).json({ message: 'Este nome de usuário já está em uso.' });
-        const token = jwt.sign({ id: this.lastID, username }, JWT_SECRET, { expiresIn: '1d' });
+    
+    try {
+        const passwordHash = bcrypt.hashSync(password, 10);
+        const newUserQuery = 'INSERT INTO users (username, "passwordHash") VALUES ($1, $2) RETURNING id, username';
+        const { rows } = await pool.query(newUserQuery, [username, passwordHash]);
+        const newUser = rows[0];
+
+        const token = jwt.sign({ id: newUser.id, username: newUser.username }, JWT_SECRET, { expiresIn: '1d' });
         res.status(201).json({ token });
-    });
+    } catch (err) {
+        if (err.code === '23505') { // Código de erro para violação de constraint 'UNIQUE'
+            return res.status(409).json({ message: 'Este nome de usuário já está em uso.' });
+        }
+        console.error("Erro no signup:", err);
+        res.status(500).json({ message: 'Erro interno do servidor.' });
+    }
 });
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
-    db.get('SELECT * FROM users WHERE username = ?', [username], (err, user) => {
-        if (!user || !bcrypt.compareSync(password, user.passwordHash)) return res.status(401).json({ message: 'Credenciais inválidas.' });
+    try {
+        const { rows } = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        const user = rows[0];
+
+        if (!user || !bcrypt.compareSync(password, user.passwordHash)) {
+            return res.status(401).json({ message: 'Credenciais inválidas.' });
+        }
         const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1d' });
         res.json({ token });
-    });
+    } catch (err) {
+        console.error("Erro no login:", err);
+        res.status(500).json({ message: 'Erro interno do servidor.' });
+    }
 });
 
-app.get('/api/me', authMiddleware, (req, res) => {
-    db.get('SELECT id, username, balance FROM users WHERE id = ?', [req.user.id], (err, user) => res.json(user));
+app.get('/api/me', authMiddleware, async (req, res) => {
+    try {
+        const { rows } = await pool.query('SELECT id, username, balance FROM users WHERE id = $1', [req.user.id]);
+        res.json(rows[0]);
+    } catch (err) {
+        console.error("Erro ao buscar perfil:", err);
+        res.status(500).json({ message: 'Erro interno do servidor.' });
+    }
 });
 
 app.get('/api/boxes', authMiddleware, (req, res) => res.json(boxes));
 
-app.post('/api/open', authMiddleware, (req, res) => {
+app.post('/api/open', authMiddleware, async (req, res) => {
     const { boxId } = req.body;
     const box = boxes.find(b => b.id === boxId);
     if (!box) return res.status(404).json({ message: 'Caixa não encontrada.' });
-    
-    db.get('SELECT balance FROM users WHERE id = ?', [req.user.id], (err, user) => {
-        if (err) return res.status(500).json({ message: "Erro ao consultar usuário." });
-        if (user.balance < box.price) return res.status(400).json({ message: 'Saldo insuficiente.' });
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN'); // Inicia uma transação
+
+        const { rows } = await client.query('SELECT balance FROM users WHERE id = $1 FOR UPDATE', [req.user.id]);
+        const user = rows[0];
+
+        if (Number(user.balance) < box.price) {
+            return res.status(400).json({ message: 'Saldo insuficiente.' });
+        }
 
         const totalWeight = box.drops.reduce((sum, drop) => sum + drop.weight, 0);
         let random = Math.random() * totalWeight;
@@ -136,12 +197,13 @@ app.post('/api/open', authMiddleware, (req, res) => {
             random -= drop.weight;
         }
 
-        const newBalance = user.balance - box.price;
-        db.serialize(() => {
-            db.run('UPDATE users SET balance = ? WHERE id = ?', [newBalance, req.user.id]);
-            db.run('INSERT INTO inventory (userId, itemId, itemName, itemImageUrl, itemValue, rarity) VALUES (?, ?, ?, ?, ?, ?)', [req.user.id, wonItem.id, wonItem.name, wonItem.imageUrl, wonItem.value, wonItem.rarity]);
-        });
-        
+        const newBalance = Number(user.balance) - box.price;
+        await client.query('UPDATE users SET balance = $1 WHERE id = $2', [newBalance, req.user.id]);
+        await client.query('INSERT INTO inventory ("userId", "itemId", "itemName", "itemImageUrl", "itemValue", rarity) VALUES ($1, $2, $3, $4, $5, $6)',
+            [req.user.id, wonItem.id, wonItem.name, wonItem.imageUrl, wonItem.value, wonItem.rarity]);
+
+        await client.query('COMMIT'); // Finaliza a transação
+
         const randomRoll = Array.from({length: 100}, () => {
             let r = Math.random() * totalWeight;
             let tempItem = box.drops[0];
@@ -154,24 +216,31 @@ app.post('/api/open', authMiddleware, (req, res) => {
 
         broadcast({ type: 'activity', payload: { username: req.user.username, itemName: wonItem.name, itemValue: wonItem.value, rarity: wonItem.rarity } });
         updateAndBroadcastLeaderboard();
-    });
+    } catch (err) {
+        await client.query('ROLLBACK'); // Desfaz a transação em caso de erro
+        console.error("Erro ao abrir caixa:", err);
+        res.status(500).json({ message: 'Erro interno do servidor.' });
+    } finally {
+        client.release(); // Libera o cliente de volta para o pool
+    }
 });
 
-app.post('/api/deposit', authMiddleware, (req, res) => {
+app.post('/api/deposit', authMiddleware, async (req, res) => {
     const { amount } = req.body;
     const depositAmount = parseFloat(amount);
     if (!depositAmount || depositAmount <= 0 || depositAmount > 1000) {
         return res.status(400).json({ message: 'Valor de depósito inválido (entre $0.01 e $1000).' });
     }
 
-    const sql = `UPDATE users SET balance = balance + ? WHERE id = ? RETURNING balance`;
-    db.get(sql, [depositAmount, req.user.id], function(err, row) {
-        if (err) return res.status(500).json({ message: 'Erro ao processar depósito.' });
-        res.json({ newBalance: row.balance });
+    try {
+        const { rows } = await pool.query('UPDATE users SET balance = balance + $1 WHERE id = $2 RETURNING balance', [depositAmount, req.user.id]);
+        res.json({ newBalance: rows[0].balance });
         updateAndBroadcastLeaderboard();
-    });
+    } catch (err) {
+        console.error("Erro no depósito:", err);
+        res.status(500).json({ message: 'Erro ao processar depósito.' });
+    }
 });
-
 
 // --- SERVINDO O ARQUIVO PRINCIPAL ---
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
@@ -183,13 +252,18 @@ wss.on('connection', ws => {
     ws.on('error', console.error);
 });
 
-function broadcast(data) { wss.clients.forEach(c => c.readyState === WebSocket.OPEN && c.send(JSON.stringify(data))); }
+function broadcast(data) {
+    wss.clients.forEach(c => c.readyState === WebSocket.OPEN && c.send(JSON.stringify(data)));
+}
 
-function updateAndBroadcastLeaderboard() {
-    db.all('SELECT username, balance FROM users ORDER BY balance DESC LIMIT 5', [], (err, rows) => {
-        if (!err) broadcast({ type: 'leaderboard', payload: rows });
-    });
+async function updateAndBroadcastLeaderboard() {
+    try {
+        const { rows } = await pool.query('SELECT username, balance FROM users ORDER BY balance DESC LIMIT 5');
+        broadcast({ type: 'leaderboard', payload: rows });
+    } catch (err) {
+        console.error("Erro ao buscar leaderboard:", err);
+    }
 }
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
