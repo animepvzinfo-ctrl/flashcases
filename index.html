@@ -1,0 +1,218 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Cases</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0d1117; --bg-surface: #161b22; --border-color: #30363d;
+            --primary-blue: #3b82f6; --light-blue: #38bdf8; --glow-blue: rgba(59, 130, 246, 0.5);
+            --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-success: #22c55e;
+            --rarity-common: #94a3b8; --rarity-uncommon: #38bdf8; --rarity-rare: #3b82f6; --rarity-legendary: #a78bfa;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: var(--text-primary); overflow-x: hidden; }
+        .hidden { display: none !important; }
+        .view { min-height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; }
+        
+        #auth-view { background: radial-gradient(circle at center, var(--bg-surface), var(--bg-dark) 80%); }
+        .auth-box { width: 400px; padding: 40px; background-color: rgba(13, 17, 23, 0.8); border: 1px solid var(--border-color); border-radius: 16px; text-align: center; backdrop-filter: blur(10px); box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+        .auth-box h1 { font-size: 2.5em; font-weight: 700; color: var(--light-blue); margin-bottom: 20px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 1em; }
+        .auth-submit-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(90deg, var(--light-blue), var(--primary-blue)); color: white; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .auth-submit-btn:hover { transform: scale(1.03); box-shadow: 0 0 20px var(--glow-blue); }
+        #error-message { color: #f87171; min-height: 20px; margin-top: 10px; }
+        #switch-link { color: var(--light-blue); cursor: pointer; font-weight: 600; }
+
+        #app-view { display: block; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background-color: rgba(22, 27, 34, 0.8); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
+        header h1 { font-size: 1.8em; color: var(--light-blue); }
+        .user-profile { display: flex; align-items: center; gap: 20px; }
+        #balance-display { font-size: 1.2em; font-weight: 700; color: var(--text-primary); }
+        #deposit-btn { background: var(--text-success); color: white; border:none; border-radius: 8px; padding: 4px 8px; font-weight: 600; cursor: pointer; margin-left: 5px;}
+        #logout-btn { background: var(--border-color); color: var(--text-primary); border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+        .container { display: flex; max-width: 1400px; margin: 30px auto; padding: 0 20px; gap: 30px; }
+        .main-content { flex: 3; }
+        .main-title { font-size: 2em; margin-bottom: 20px; border-left: 4px solid var(--primary-blue); padding-left: 10px; }
+        .cases-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
+        .case-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; text-align: center; transition: all 0.3s ease; overflow: hidden; position: relative; }
+        .case-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-color: var(--primary-blue); }
+        .case-card-image-wrapper { background: var(--bg-dark); padding: 20px; }
+        .case-card img { height: 120px; transition: transform 0.3s ease; }
+        .case-card:hover img { transform: scale(1.1); }
+        .case-card-info { padding: 20px; }
+        .case-card .price { font-size: 1.4em; font-weight: 700; color: var(--text-primary); margin: 10px 0 20px; }
+        .open-button { width: 100%; padding: 12px; background: var(--primary-blue); border: none; border-radius: 8px; color: white; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .open-button:hover { background: var(--light-blue); }
+        .open-button:disabled { background: #555; cursor: not-allowed; }
+
+        .side-panel { flex: 1; max-width: 350px; }
+        .panel-box { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .panel-box h4 { margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        .panel-box ul { list-style: none; }
+        .panel-box li { padding: 8px 0; font-size: 0.9em; display: flex; justify-content: space-between;}
+        .panel-box li.common { color: var(--rarity-common); } .panel-box li.uncommon { color: var(--rarity-uncommon); }
+        .panel-box li.rare { color: var(--rarity-rare); } .panel-box li.legendary { color: var(--rarity-legendary); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; }
+        
+        .case-roller-container { width: 100%; max-width: 90vw; height: 180px; overflow: hidden; position: relative; border-top: 2px solid var(--primary-blue); border-bottom: 2px solid var(--primary-blue); background: repeating-linear-gradient(45deg, var(--bg-dark), var(--bg-dark) 10px, #10141a 10px, #10141a 20px); }
+        .roller-pin { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 100%; background: white; z-index: 10; box-shadow: 0 0 15px white, 0 0 25px var(--light-blue); }
+        .case-roller { display: flex; height: 100%; position: absolute; left: 0; }
+        .roller-item { width: 180px; height: 180px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 8px; margin: 0 5px; border: 2px solid; background: rgba(0,0,0,0.5); padding: 5px; font-size: 0.8em; }
+        .roller-item img { max-width: 80%; height: 90px; }
+        .item-won-display { animation: fadeIn 0.5s ease-in-out; text-align: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .won-item-card { display: inline-block; padding: 20px; margin: 20px 0; background: var(--bg-surface); border-radius: 12px; border: 2px solid; }
+        .won-item-card strong { font-size: 1.5em; display: block; }
+        .common { border-color: var(--rarity-common); color: var(--rarity-common); } .uncommon { border-color: var(--rarity-uncommon); color: var(--rarity-uncommon); }
+        .rare { border-color: var(--rarity-rare); color: var(--rarity-rare); } .legendary { border-color: var(--rarity-legendary); color: var(--rarity-legendary); }
+    </style>
+</head>
+<body>
+
+    <div id="auth-view" class="view"><div class="auth-box"> <h1 id="auth-logo">Flash Cases</h1> <h2 id="auth-title">Login</h2> <form id="auth-form"> <div class="input-group"><input type="text" id="username" placeholder="Usuário" required></div> <div class="input-group"><input type="password" id="password" placeholder="Senha" required></div> <button type="submit" class="auth-submit-btn" id="auth-submit-btn">Entrar</button> </form> <p id="error-message"></p> <p><span id="switch-text">Não tem conta?</span> <a id="switch-link">Cadastre-se</a></p> </div></div>
+    <div id="app-view" class="hidden"> <header> <h1>Flash Cases</h1> <div class="user-profile"> <div class="balance-container"> <span>SALDO: </span> <span id="balance-display">$0.00</span> <button id="deposit-btn">+</button> </div> <span id="username-display"></span> <button id="logout-btn">Sair</button> </div> </header> <main class="container"> <div class="main-content"> <h2 class="main-title">Caixas Disponíveis</h2> <div id="cases-grid" class="cases-grid"></div> </div> <aside class="side-panel"> <div class="panel-box"><h4>Leaderboard</h4><ul id="leaderboard-list"></ul></div> <div class="panel-box"><h4>Atividade Recente</h4><ul id="activity-list"></ul></div> </aside> </main> </div>
+    <div id="open-case-modal" class="modal-overlay hidden"> <div> <div class="case-roller-container"><div class="roller-pin"></div><div id="case-roller" class="case-roller"></div></div> <div id="item-won-display" class="item-won-display hidden"> <h3>VOCÊ GANHOU:</h3> <div id="won-item-card" class="won-item-card"> <img id="item-won-img" src="" alt="Item Ganho"> <p id="item-won-name"></p> <strong id="item-won-value"></strong> </div> <button id="claim-item-btn" class="open-button">FECHAR</button> </div> </div> </div>
+    <div id="deposit-modal" class="modal-overlay hidden"> <div class="modal-content"> <h2>Depositar Saldo</h2> <form id="deposit-form"> <div class="input-group"><label>Valor (USD)</label><input type="number" id="deposit-amount" placeholder="20.00" step="0.01" required></div> <div class="input-group"><label>Número do Cartão (Fictício)</label><input type="text" id="card-number" placeholder="4992 7398 716" required></div> <div class="input-group"><label>Validade</label><input type="text" id="card-expiry" placeholder="MM/AA" required></div> <div class="input-group"><label>CVV</label><input type="text" id="card-cvv" placeholder="123" required></div> <button type="submit" class="auth-submit-btn">Depositar</button> <button type="button" id="cancel-deposit-btn" class="open-button" style="background:var(--border-color); margin-top:10px;">Cancelar</button> </form> <p id="deposit-message"></p> </div> </div>
+
+<!-- Cole isto no final do seu arquivo index.html, substituindo o <script> antigo -->
+
+<script>
+(() => {
+    // --- STATE & CONFIG ---
+    let token = localStorage.getItem('token');
+    const API_URL = '/api';
+    const WS_URL = `ws://${window.location.host}`;
+
+    // --- DOM ELEMENTS ---
+    const views = { auth: document.getElementById('auth-view'), app: document.getElementById('app-view') };
+    const modals = { open: document.getElementById('open-case-modal'), deposit: document.getElementById('deposit-modal') };
+    const authForm = document.getElementById('auth-form');
+    const casesGrid = document.getElementById('cases-grid');
+
+    // --- INITIALIZATION ---
+    const init = async () => { token ? await loadApp() : showView('auth'); };
+    const loadApp = async () => { try { await fetchUserProfile(); await fetchCases(); setupWebSocket(); showView('app'); } catch { logout(); }};
+    const showView = (v) => { Object.values(views).forEach(el => el.classList.add('hidden')); views[v].classList.remove('hidden'); };
+    const showModal = (m) => modals[m].classList.remove('hidden');
+    const hideModal = (m) => modals[m].classList.add('hidden');
+
+    // --- API HELPERS ---
+    const fetchWithAuth = async (endpoint, options = {}) => {
+        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+        const response = await fetch(API_URL + endpoint, { ...options, headers });
+        if (response.status === 401 || response.status === 403) throw new Error('Auth failed');
+        if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
+        return response.json();
+    };
+
+    // --- AUTHENTICATION ---
+    let isLogin = true;
+    document.getElementById('switch-link').addEventListener('click', () => { isLogin = !isLogin; document.getElementById('auth-title').textContent = isLogin ? 'Login' : 'Criar Conta'; document.getElementById('auth-submit-btn').textContent = isLogin ? 'Entrar' : 'Cadastrar'; document.getElementById('switch-text').textContent = isLogin ? 'Não tem conta?' : 'Já tem uma conta?'; document.getElementById('error-message').textContent = ''; });
+    authForm.addEventListener('submit', async (e) => { e.preventDefault(); const username = document.getElementById('username').value; const password = document.getElementById('password').value; const endpoint = isLogin ? '/login' : '/signup'; try { const response = await fetch(API_URL + endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message); token = data.token; localStorage.setItem('token', token); init(); } catch (error) { document.getElementById('error-message').textContent = error.message; } });
+    const logout = () => { token = null; localStorage.removeItem('token'); window.location.reload(); };
+    document.getElementById('logout-btn').addEventListener('click', logout);
+
+    // --- CORE APP LOGIC ---
+    const fetchUserProfile = async () => { const user = await fetchWithAuth('/me'); document.getElementById('username-display').textContent = user.username; document.getElementById('balance-display').textContent = `$${Number(user.balance).toFixed(2)}`; };
+    const fetchCases = async () => { const cases = await fetchWithAuth('/boxes'); casesGrid.innerHTML = cases.map(c => `<div class="case-card"><div class="case-card-image-wrapper"><img src="${c.imageUrl}" alt="${c.name}"></div><div class="case-card-info"><h3>${c.name}</h3><p class="price">$${c.price.toFixed(2)}</p><button class="open-button" data-box-id="${c.id}">Abrir</button></div></div>`).join(''); };
+
+    // --- CASE OPENING ---
+    casesGrid.addEventListener('click', async (e) => {
+        if (e.target.classList.contains('open-button')) {
+            const button = e.target;
+            button.disabled = true;
+            button.textContent = 'Abrindo...';
+            try {
+                const result = await fetchWithAuth('/open', { method: 'POST', body: JSON.stringify({ boxId: button.dataset.boxId }) });
+                document.getElementById('balance-display').textContent = `$${result.newBalance.toFixed(2)}`;
+                // A chamada para a função corrigida
+                startCaseOpeningAnimation(result.item, result.randomRoll);
+            } catch (error) {
+                alert(`Erro: ${error.message}`);
+                button.disabled = false;
+                button.textContent = 'Abrir';
+            }
+        }
+    });
+
+    /**
+     * @description ANIMAÇÃO CORRIGIDA
+     * Esta função foi reescrita para resolver o problema de timing.
+     */
+    const startCaseOpeningAnimation = (wonItem, rollItems) => {
+        const roller = document.getElementById('case-roller');
+        const itemWonDisplay = document.getElementById('item-won-display');
+
+        // 1. Prepara a roleta e reseta o estado
+        roller.innerHTML = rollItems.map(item => `<div class="roller-item ${item.rarity}"><img src="${item.imageUrl}" alt="${item.name}"><span>${item.name}</span></div>`).join('');
+        itemWonDisplay.classList.add('hidden');
+        roller.style.transition = 'none';
+        roller.style.transform = 'translateX(0px)';
+
+        // 2. Mostra o modal
+        showModal('open');
+
+        // 3. (A CORREÇÃO CRÍTICA) Espera o navegador renderizar o modal antes de calcular e animar.
+        // Usamos um pequeno timeout para empurrar o código de animação para o próximo "tick" do navegador.
+        setTimeout(() => {
+            const itemWidth = 180 + 10; // 180px de largura + 10px de margin
+            const winningIndex = 95; // O item vencedor está na posição 95 (definido no server.js)
+            const rollerContainerWidth = roller.parentElement.offsetWidth;
+
+            // Calcula a posição para centralizar o item vencedor sob o pino
+            const randomOffset = (Math.random() - 0.5) * (itemWidth * 0.8); // Adiciona uma pequena variação
+            const targetPosition = (winningIndex * itemWidth) - (rollerContainerWidth / 2) + (itemWidth / 2) + randomOffset;
+
+            // 4. Aplica a transição e inicia a animação
+            roller.style.transition = 'transform 8s cubic-bezier(0.25, 0.1, 0.2, 1)';
+            roller.style.transform = `translateX(-${targetPosition}px)`;
+
+            // 5. Agenda a exibição do item ganho para depois da animação
+            setTimeout(() => {
+                document.getElementById('item-won-img').src = wonItem.imageUrl;
+                document.getElementById('item-won-name').textContent = wonItem.name;
+                document.getElementById('item-won-value').textContent = `$${wonItem.value.toFixed(2)}`;
+                const card = document.getElementById('won-item-card');
+                card.className = `won-item-card ${wonItem.rarity}`;
+                itemWonDisplay.classList.remove('hidden');
+            }, 8500); // 8000ms da animação + 500ms de margem
+        }, 100); // 100ms é um delay seguro para garantir a renderização do modal
+    };
+
+    document.getElementById('claim-item-btn').addEventListener('click', () => {
+        hideModal('open');
+        // Reativa o botão de abrir da caixa que estava sendo aberta (opcional, mas bom UX)
+        const openButtons = document.querySelectorAll('.open-button:disabled');
+        openButtons.forEach(btn => {
+            btn.disabled = false;
+            btn.textContent = 'Abrir';
+        });
+    });
+    
+    // --- DEPOSIT SYSTEM ---
+    document.getElementById('deposit-btn').addEventListener('click', () => showModal('deposit'));
+    document.getElementById('cancel-deposit-btn').addEventListener('click', () => hideModal('deposit'));
+    document.getElementById('deposit-form').addEventListener('submit', async (e) => { e.preventDefault(); const amount = document.getElementById('deposit-amount').value; const cardNumber = document.getElementById('card-number').value; const messageEl = document.getElementById('deposit-message'); messageEl.textContent = ''; if (!luhnCheck(cardNumber)) { messageEl.style.color = '#f87171'; messageEl.textContent = 'Número do cartão inválido.'; return; } try { const result = await fetchWithAuth('/deposit', { method: 'POST', body: JSON.stringify({ amount }) }); document.getElementById('balance-display').textContent = `$${result.newBalance.toFixed(2)}`; messageEl.style.color = 'var(--text-success)'; messageEl.textContent = 'Depósito bem-sucedido!'; setTimeout(() => { hideModal('deposit'); messageEl.textContent = ''; e.target.reset(); }, 1500); } catch (error) { messageEl.style.color = '#f87171'; messageEl.textContent = `Erro: ${error.message}`; } });
+    const luhnCheck = val => { let sum = 0; let arr = String(val).replace(/[^\d]/g, "").split("").reverse().map(x => parseInt(x, 10)); for (let i = 0; i < arr.length; i++) { if (i % 2 !== 0) { arr[i] *= 2; if (arr[i] > 9) arr[i] -= 9; } sum += arr[i]; } return sum > 0 && sum % 10 === 0; };
+
+    // --- WEBSOCKETS ---
+    function setupWebSocket() { const ws = new WebSocket(WS_URL); ws.onmessage = (event) => { const data = JSON.parse(event.data); if (data.type === 'activity') updateActivityFeed(data.payload); if (data.type === 'leaderboard') updateLeaderboard(data.payload); }; ws.onclose = () => setTimeout(setupWebSocket, 5000); }
+    const updateActivityFeed = (act) => { const list = document.getElementById('activity-list'); const item = document.createElement('li'); item.className = act.rarity; item.innerHTML = `<span>${act.username} ganhou <strong>${act.itemName}</strong></span> <span>$${act.itemValue.toFixed(2)}</span>`; list.prepend(item); if (list.children.length > 7) list.lastChild.remove(); };
+    const updateLeaderboard = (lb) => { const list = document.getElementById('leaderboard-list'); list.innerHTML = lb.map(u => `<li><span>${u.username}</span> <strong>$${u.balance.toFixed(2)}</strong></li>`).join(''); };
+
+    // --- START THE APP ---
+    init();
+})();
+</script>
+</body>
+</html>
