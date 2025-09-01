@@ -1,20 +1,19 @@
 {
-  "name": "flash-cases-backend",
-  "version": "1.0.0",
-  "description": "Backend server for the Flash Cases project",
+  "name": "flash-cases-final",
+  "version": "2.0.0",
+  "description": "The definitive, fully functional version of Flash Cases",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
-    "sqlite3": "^5.1.6",
+    "pg": "^8.11.3",  // <-- ADICIONE ESTA LINHA
     "ws": "^8.13.0"
+  },
+  "engines": {
+    "node": "18.x"     // <-- ADICIONE ESTA LINHA (BOA PRÁTICA)
   }
 }
