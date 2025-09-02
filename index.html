@@ -1,153 +1,756 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flash Cases</title>
+    <meta name="description" content="Abra caixas exclusivas e colecione itens raros no Flash Cases. Teste sua sorte hoje mesmo!">
+    <title>Flash Cases - Abertura de Caixas</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            --bg-dark: #0d1117; --bg-surface: #161b22; --border-color: #30363d;
-            --primary-blue: #3b82f6; --light-blue: #38bdf8; --glow-blue: rgba(59, 130, 246, 0.5);
-            --text-primary: #e2e8f0; --text-secondary: #94a3b8; --text-success: #22c55e;
-            --rarity-common: #94a3b8; --rarity-uncommon: #38bdf8; --rarity-rare: #3b82f6; --rarity-legendary: #a78bfa;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-dark); color: var(--text-primary); overflow-x: hidden; }
-        .hidden { display: none !important; }
-        .view { min-height: 100vh; width: 100%; display: flex; justify-content: center; align-items: center; }
-        
-        #auth-view { background: radial-gradient(circle at center, var(--bg-surface), var(--bg-dark) 80%); }
-        .auth-box { width: 400px; padding: 40px; background-color: rgba(13, 17, 23, 0.8); border: 1px solid var(--border-color); border-radius: 16px; text-align: center; backdrop-filter: blur(10px); box-shadow: 0 0 40px rgba(0,0,0,0.5); }
-        .auth-box h1 { font-size: 2.5em; font-weight: 700; color: var(--light-blue); margin-bottom: 20px; }
-        .input-group { margin-bottom: 20px; }
-        .input-group input { width: 100%; padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 1em; }
-        .auth-submit-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: linear-gradient(90deg, var(--light-blue), var(--primary-blue)); color: white; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
-        .auth-submit-btn:hover { transform: scale(1.03); box-shadow: 0 0 20px var(--glow-blue); }
-        #error-message { color: #f87171; min-height: 20px; margin-top: 10px; }
-        #switch-link { color: var(--light-blue); cursor: pointer; font-weight: 600; }
+            /* Nova Paleta de Cores: Roxo e Preto Brilhante */
+            --bg-dark: #0a0a0f;
+            --bg-surface: #120f1a;
+            --border-color: #4a2c6d;
+            --primary-purple: #9f7aea;
+            --light-purple: #c084fc;
+            --glow-purple: rgba(159, 122, 234, 0.5);
 
+            --text-primary: #f0e6ff;
+            --text-secondary: #a39daa;
+            --text-success: #4ade80;
+            --text-error: #f87171;
+
+            /* Cores de Raridade Re-tematizadas */
+            --rarity-common: #a39daa;    /* Cinza Lavanda */
+            --rarity-uncommon: #60a5fa;  /* Azul Suave */
+            --rarity-rare: #9f7aea;      /* Roxo Primário */
+            --rarity-legendary: #f472b6; /* Rosa Vibrante */
+        }
+
+        /* --- Reset e Configurações Globais --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            background: radial-gradient(ellipse at bottom, var(--bg-surface) 0%, var(--bg-dark) 70%);
+        }
+
+        /* --- Classes Utilitárias --- */
+        .hidden { display: none !important; }
+
+        /* --- Estrutura Principal --- */
+        .view {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* --- Tela de Autenticação --- */
+        #auth-view {
+            background: radial-gradient(circle at center, #1a1423, var(--bg-dark) 80%);
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            background-color: rgba(18, 15, 26, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 0 60px rgba(159, 122, 234, 0.2);
+        }
+
+        .auth-box h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            color: var(--light-purple);
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px var(--glow-purple);
+        }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 5px; font-size: 0.9em; color: var(--text-secondary); }
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1em;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 15px var(--glow-purple);
+        }
+
+        .auth-submit-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, var(--light-purple), var(--primary-purple));
+            color: white;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .auth-submit-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 25px var(--glow-purple);
+        }
+        .auth-submit-btn:disabled {
+            background: #555;
+            cursor: wait;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #error-message { color: var(--text-error); min-height: 20px; margin-top: 10px; }
+        #switch-link { color: var(--light-purple); cursor: pointer; font-weight: 600; text-decoration: none; }
+        
+        /* --- Aplicação Principal --- */
         #app-view { display: block; }
-        header { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background-color: rgba(22, 27, 34, 0.8); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
-        header h1 { font-size: 1.8em; color: var(--light-blue); }
+        
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            background-color: rgba(18, 15, 26, 0.7);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .site-header h1 {
+            font-size: 1.8em;
+            color: var(--light-purple);
+            text-shadow: 0 0 8px var(--glow-purple);
+        }
+        
         .user-profile { display: flex; align-items: center; gap: 20px; }
         #balance-display { font-size: 1.2em; font-weight: 700; color: var(--text-primary); }
-        #deposit-btn { background: var(--text-success); color: white; border:none; border-radius: 8px; padding: 4px 8px; font-weight: 600; cursor: pointer; margin-left: 5px;}
-        #logout-btn { background: var(--border-color); color: var(--text-primary); border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        #deposit-btn {
+            background: var(--text-success);
+            color: var(--bg-dark);
+            border:none; border-radius: 8px;
+            padding: 4px 10px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-left: 5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #deposit-btn:hover { transform: scale(1.1); box-shadow: 0 0 10px var(--text-success); }
+        
+        #logout-btn {
+            background: var(--border-color);
+            color: var(--text-primary);
+            border: none; padding: 8px 16px;
+            border-radius: 8px; cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        #logout-btn:hover { background-color: var(--primary-purple); }
 
-        .container { display: flex; max-width: 1400px; margin: 30px auto; padding: 0 20px; gap: 30px; }
-        .main-content { flex: 3; }
-        .main-title { font-size: 2em; margin-bottom: 20px; border-left: 4px solid var(--primary-blue); padding-left: 10px; }
+        .container { display: flex; flex-wrap: wrap; max-width: 1400px; margin: 30px auto; padding: 0 20px; gap: 30px; }
+        .main-content { flex: 3; min-width: 300px; }
+        .main-title { font-size: 2em; margin-bottom: 20px; border-left: 4px solid var(--primary-purple); padding-left: 15px; }
+        
         .cases-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
-        .case-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; text-align: center; transition: all 0.3s ease; overflow: hidden; position: relative; }
-        .case-card:hover { transform: translateY(-8px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-color: var(--primary-blue); }
+        .case-card {
+            background: linear-gradient(145deg, var(--bg-surface), #1a1622);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        .case-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 40px rgba(159, 122, 234, 0.3);
+            border-color: var(--primary-purple);
+        }
+
         .case-card-image-wrapper { background: var(--bg-dark); padding: 20px; }
-        .case-card img { height: 120px; transition: transform 0.3s ease; }
+        .case-card img { height: 120px; transition: transform 0.3s ease; filter: drop-shadow(0 0 15px rgba(0,0,0,0.8));}
         .case-card:hover img { transform: scale(1.1); }
         .case-card-info { padding: 20px; }
         .case-card .price { font-size: 1.4em; font-weight: 700; color: var(--text-primary); margin: 10px 0 20px; }
-        .open-button { width: 100%; padding: 12px; background: var(--primary-blue); border: none; border-radius: 8px; color: white; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
-        .open-button:hover { background: var(--light-blue); }
+        
+        .open-button {
+            width: 100%; padding: 12px;
+            background: var(--primary-purple);
+            border: none; border-radius: 8px; color: white;
+            font-size: 1em; font-weight: 600; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .open-button:hover:not(:disabled) { background: var(--light-purple); box-shadow: 0 0 15px var(--glow-purple); }
         .open-button:disabled { background: #555; cursor: not-allowed; }
 
-        .side-panel { flex: 1; max-width: 350px; }
-        .panel-box { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .side-panel { flex: 1; min-width: 300px; max-width: 350px; }
+        .panel-box {
+            background: rgba(18, 15, 26, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+        }
         .panel-box h4 { margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
         .panel-box ul { list-style: none; }
-        .panel-box li { padding: 8px 0; font-size: 0.9em; display: flex; justify-content: space-between;}
-        .panel-box li.common { color: var(--rarity-common); } .panel-box li.uncommon { color: var(--rarity-uncommon); }
-        .panel-box li.rare { color: var(--rarity-rare); } .panel-box li.legendary { color: var(--rarity-legendary); }
+        .panel-box li {
+            padding: 8px 0; font-size: 0.9em;
+            display: flex; justify-content: space-between;
+            border-bottom: 1px solid #ffffff10;
+        }
+        .panel-box li:last-child { border-bottom: none; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 30px; border-radius: 16px; width: 90%; max-width: 450px; }
-        
-        .case-roller-container { width: 100%; max-width: 90vw; height: 180px; overflow: hidden; position: relative; border-top: 2px solid var(--primary-blue); border-bottom: 2px solid var(--primary-blue); background: repeating-linear-gradient(45deg, var(--bg-dark), var(--bg-dark) 10px, #10141a 10px, #10141a 20px); }
-        .roller-pin { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 4px; height: 100%; background: white; z-index: 10; box-shadow: 0 0 15px white, 0 0 25px var(--light-blue); }
+        /* --- Modais --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+
+        .modal-content {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            padding: 30px; border-radius: 16px;
+            width: 90%; max-width: 450px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+
+        /* --- Animação de Abertura de Caixa --- */
+        .case-roller-container {
+            width: 100%; max-width: 90vw;
+            height: 180px; overflow: hidden; position: relative;
+            border-top: 2px solid var(--primary-purple);
+            border-bottom: 2px solid var(--primary-purple);
+            background: repeating-linear-gradient(45deg, var(--bg-dark), var(--bg-dark) 10px, #10141a 10px, #10141a 20px);
+        }
+        .roller-pin {
+            position: absolute; top: 0; left: 50%;
+            transform: translateX(-50%); width: 4px; height: 100%;
+            background: white; z-index: 10;
+            box-shadow: 0 0 15px white, 0 0 25px var(--light-purple);
+            border-radius: 4px;
+        }
         .case-roller { display: flex; height: 100%; position: absolute; left: 0; }
-        .roller-item { width: 180px; height: 180px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 8px; margin: 0 5px; border: 2px solid; background: rgba(0,0,0,0.5); padding: 5px; font-size: 0.8em; }
+        
+        .roller-item {
+            width: 180px; height: 180px; flex-shrink: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border-radius: 8px; margin: 0 5px;
+            border: 2px solid;
+            background: rgba(0,0,0,0.5);
+            padding: 5px; font-size: 0.8em;
+            transition: transform 0.3s;
+        }
         .roller-item img { max-width: 80%; height: 90px; }
+
         .item-won-display { animation: fadeIn 0.5s ease-in-out; text-align: center; }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-        .won-item-card { display: inline-block; padding: 20px; margin: 20px 0; background: var(--bg-surface); border-radius: 12px; border: 2px solid; }
+        
+        .won-item-card {
+            display: inline-block; padding: 20px; margin: 20px 0;
+            background: var(--bg-surface);
+            border-radius: 12px; border: 2px solid;
+            box-shadow: 0 0 30px;
+        }
         .won-item-card strong { font-size: 1.5em; display: block; }
-        .common { border-color: var(--rarity-common); color: var(--rarity-common); } .uncommon { border-color: var(--rarity-uncommon); color: var(--rarity-uncommon); }
-        .rare { border-color: var(--rarity-rare); color: var(--rarity-rare); } .legendary { border-color: var(--rarity-legendary); color: var(--rarity-legendary); }
+        
+        /* --- Cores de Raridade para Itens e Texto --- */
+        .common { border-color: var(--rarity-common); color: var(--rarity-common); }
+        .uncommon { border-color: var(--rarity-uncommon); color: var(--rarity-uncommon); }
+        .rare { border-color: var(--rarity-rare); color: var(--rarity-rare); }
+        .legendary { border-color: var(--rarity-legendary); color: var(--rarity-legendary); }
+        .won-item-card.rare { box-shadow: 0 0 30px var(--rarity-rare); }
+        .won-item-card.legendary { box-shadow: 0 0 30px var(--rarity-legendary); }
     </style>
 </head>
 <body>
 
-    <div id="auth-view" class="view"><div class="auth-box"> <h1 id="auth-logo">Flash Cases</h1> <h2 id="auth-title">Login</h2> <form id="auth-form"> <div class="input-group"><input type="text" id="username" placeholder="Usuário" required></div> <div class="input-group"><input type="password" id="password" placeholder="Senha" required></div> <button type="submit" class="auth-submit-btn" id="auth-submit-btn">Entrar</button> </form> <p id="error-message"></p> <p><span id="switch-text">Não tem conta?</span> <a id="switch-link">Cadastre-se</a></p> </div></div>
-    <div id="app-view" class="hidden"> <header> <h1>Flash Cases</h1> <div class="user-profile"> <div class="balance-container"> <span>SALDO: </span> <span id="balance-display">$0.00</span> <button id="deposit-btn">+</button> </div> <span id="username-display"></span> <button id="logout-btn">Sair</button> </div> </header> <main class="container"> <div class="main-content"> <h2 class="main-title">Caixas Disponíveis</h2> <div id="cases-grid" class="cases-grid"></div> </div> <aside class="side-panel"> <div class="panel-box"><h4>Leaderboard</h4><ul id="leaderboard-list"></ul></div> <div class="panel-box"><h4>Atividade Recente</h4><ul id="activity-list"></ul></div> </aside> </main> </div>
-    <div id="open-case-modal" class="modal-overlay hidden"> <div> <div class="case-roller-container"><div class="roller-pin"></div><div id="case-roller" class="case-roller"></div></div> <div id="item-won-display" class="item-won-display hidden"> <h3>VOCÊ GANHOU:</h3> <div id="won-item-card" class="won-item-card"> <img id="item-won-img" src="" alt="Item Ganho"> <p id="item-won-name"></p> <strong id="item-won-value"></strong> </div> <button id="claim-item-btn" class="open-button">FECHAR</button> </div> </div> </div>
-    <div id="deposit-modal" class="modal-overlay hidden"> <div class="modal-content"> <h2>Depositar Saldo</h2> <form id="deposit-form"> <div class="input-group"><label>Valor (USD)</label><input type="number" id="deposit-amount" placeholder="20.00" step="0.01" required></div> <div class="input-group"><label>Número do Cartão (Fictício)</label><input type="text" id="card-number" placeholder="4992 7398 716" required></div> <div class="input-group"><label>Validade</label><input type="text" id="card-expiry" placeholder="MM/AA" required></div> <div class="input-group"><label>CVV</label><input type="text" id="card-cvv" placeholder="123" required></div> <button type="submit" class="auth-submit-btn">Depositar</button> <button type="button" id="cancel-deposit-btn" class="open-button" style="background:var(--border-color); margin-top:10px;">Cancelar</button> </form> <p id="deposit-message"></p> </div> </div>
+    <section id="auth-view" class="view">
+        <div class="auth-box">
+            <h1 id="auth-logo">Flash Cases</h1>
+            <h2 id="auth-title">Login</h2>
+            <form id="auth-form" novalidate>
+                <div class="input-group">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" autocomplete="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="auth-submit-btn" id="auth-submit-btn">Entrar</button>
+            </form>
+            <p id="error-message" aria-live="polite"></p>
+            <p><span id="switch-text">Não tem conta?</span> <a href="#" id="switch-link">Cadastre-se</a></p>
+        </div>
+    </section>
 
-<!-- Cole isto no final do seu arquivo index.html, substituindo o <script> antigo -->
+    <div id="app-view" class="hidden">
+        <header class="site-header">
+            <h1>Flash Cases</h1>
+            <div class="user-profile">
+                <div class="balance-container">
+                    <span>SALDO: </span>
+                    <span id="balance-display">$0.00</span>
+                    <button id="deposit-btn" aria-label="Depositar saldo">+</button>
+                </div>
+                <span id="username-display" aria-label="Usuário logado"></span>
+                <button id="logout-btn">Sair</button>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="main-content">
+                <h2 class="main-title">Caixas Disponíveis</h2>
+                <div id="cases-grid" class="cases-grid"></div>
+            </div>
+            <aside class="side-panel">
+                <section class="panel-box">
+                    <h4>Leaderboard</h4>
+                    <ul id="leaderboard-list"></ul>
+                </section>
+                <section class="panel-box">
+                    <h4>Atividade Recente</h4>
+                    <ul id="activity-list" aria-live="polite"></ul>
+                </section>
+            </aside>
+        </main>
+    </div>
+
+    <!-- Modal de Abertura de Caixa -->
+    <div id="open-case-modal" class="modal-overlay" aria-hidden="true">
+        <div>
+            <div class="case-roller-container">
+                <div class="roller-pin"></div>
+                <div id="case-roller" class="case-roller"></div>
+            </div>
+            <div id="item-won-display" class="item-won-display hidden">
+                <h3>VOCÊ GANHOU:</h3>
+                <div id="won-item-card" class="won-item-card">
+                    <img id="item-won-img" src="" alt="Item Ganho">
+                    <p id="item-won-name"></p>
+                    <strong id="item-won-value"></strong>
+                </div>
+                <button id="claim-item-btn" class="open-button">FECHAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Depósito -->
+    <div id="deposit-modal" class="modal-overlay" aria-hidden="true">
+        <div class="modal-content">
+            <h2>Depositar Saldo</h2>
+            <form id="deposit-form" novalidate>
+                <div class="input-group">
+                    <label for="deposit-amount">Valor (USD)</label>
+                    <input type="number" id="deposit-amount" placeholder="20.00" step="0.01" min="1" required>
+                </div>
+                <div class="input-group">
+                    <label for="card-number">Número do Cartão (Fictício)</label>
+                    <input type="text" id="card-number" placeholder="xxxx xxxx xxxx xxxx" required>
+                </div>
+                <div class="input-group">
+                    <label for="card-expiry">Validade</label>
+                    <input type="text" id="card-expiry" placeholder="MM/AA" required>
+                </div>
+                <div class="input-group">
+                    <label for="card-cvv">CVV</label>
+                    <input type="text" id="card-cvv" placeholder="123" required>
+                </div>
+                <button type="submit" class="auth-submit-btn">Depositar</button>
+                <button type="button" id="cancel-deposit-btn" class="open-button" style="background:var(--border-color); margin-top:10px;">Cancelar</button>
+            </form>
+            <p id="deposit-message" aria-live="polite"></p>
+        </div>
+    </div>
 
 <script>
 (() => {
-    // --- STATE & CONFIG ---
-    let token = localStorage.getItem('token');
-    const API_URL = '/api';
-    // CORREÇÃO CRÍTICA: URL do WebSocket dinâmica e segura
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const WS_URL = `${protocol}//${window.location.host}`;
+    // --- MÓDULO DE CONFIGURAÇÃO E ESTADO ---
+    const config = {
+        API_URL: '/api',
+        // URL do WebSocket dinâmica e segura
+        WS_URL: `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`,
+    };
 
-    // O resto do seu script continua aqui...
-    // (O código abaixo é o mesmo de antes, mas incluído para garantir)
-    const views = { auth: document.getElementById('auth-view'), app: document.getElementById('app-view') };
-    const modals = { open: document.getElementById('open-case-modal'), deposit: document.getElementById('deposit-modal') };
-    const authForm = document.getElementById('auth-form');
-    const casesGrid = document.getElementById('cases-grid');
-    const init = async () => { token ? await loadApp() : showView('auth'); };
-    const loadApp = async () => { try { await fetchUserProfile(); await fetchCases(); setupWebSocket(); showView('app'); } catch { logout(); }};
-    const showView = (v) => { Object.values(views).forEach(el => el.classList.add('hidden')); views[v].classList.remove('hidden'); };
-    const showModal = (m) => modals[m].classList.remove('hidden');
-    const hideModal = (m) => modals[m].classList.add('hidden');
-    const fetchWithAuth = async (endpoint, options = {}) => {
-        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
-        const response = await fetch(API_URL + endpoint, { ...options, headers });
-        if (response.status === 401 || response.status === 403) throw new Error('Auth failed');
-        if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
-        return response.json();
+    const state = {
+        token: localStorage.getItem('token'),
+        isLoginView: true,
+        user: null,
+        websocket: null,
     };
-    let isLogin = true;
-    document.getElementById('switch-link').addEventListener('click', () => { isLogin = !isLogin; document.getElementById('auth-title').textContent = isLogin ? 'Login' : 'Criar Conta'; document.getElementById('auth-submit-btn').textContent = isLogin ? 'Entrar' : 'Cadastrar'; document.getElementById('switch-text').textContent = isLogin ? 'Não tem conta?' : 'Já tem uma conta?'; document.getElementById('error-message').textContent = ''; });
-    authForm.addEventListener('submit', async (e) => { e.preventDefault(); const username = document.getElementById('username').value; const password = document.getElementById('password').value; const endpoint = isLogin ? '/login' : '/signup'; try { const response = await fetch(API_URL + endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }); const data = await response.json(); if (!response.ok) throw new Error(data.message); token = data.token; localStorage.setItem('token', token); init(); } catch (error) { document.getElementById('error-message').textContent = error.message; } });
-    const logout = () => { token = null; localStorage.removeItem('token'); window.location.reload(); };
-    document.getElementById('logout-btn').addEventListener('click', logout);
-    const fetchUserProfile = async () => { const user = await fetchWithAuth('/me'); document.getElementById('username-display').textContent = user.username; document.getElementById('balance-display').textContent = `$${Number(user.balance).toFixed(2)}`; };
-    const fetchCases = async () => { const cases = await fetchWithAuth('/boxes'); casesGrid.innerHTML = cases.map(c => `<div class="case-card"><div class="case-card-image-wrapper"><img src="${c.imageUrl}" alt="${c.name}"></div><div class="case-card-info"><h3>${c.name}</h3><p class="price">$${c.price.toFixed(2)}</p><button class="open-button" data-box-id="${c.id}">Abrir</button></div></div>`).join(''); };
-    casesGrid.addEventListener('click', async (e) => { if (e.target.classList.contains('open-button')) { const button = e.target; button.disabled = true; button.textContent = 'Abrindo...'; try { const result = await fetchWithAuth('/open', { method: 'POST', body: JSON.stringify({ boxId: button.dataset.boxId }) }); document.getElementById('balance-display').textContent = `$${result.newBalance.toFixed(2)}`; startCaseOpeningAnimation(result.item, result.randomRoll); } catch (error) { alert(`Erro: ${error.message}`); button.disabled = false; button.textContent = 'Abrir'; } } });
-    const startCaseOpeningAnimation = (wonItem, rollItems) => {
-        const roller = document.getElementById('case-roller'); const itemWonDisplay = document.getElementById('item-won-display');
-        roller.innerHTML = rollItems.map(item => `<div class="roller-item ${item.rarity}"><img src="${item.imageUrl}" alt="${item.name}"><span>${item.name}</span></div>`).join('');
-        itemWonDisplay.classList.add('hidden'); roller.style.transition = 'none'; roller.style.transform = 'translateX(0px)';
-        showModal('open');
-        setTimeout(() => {
-            const itemWidth = 180 + 10; const winningIndex = 95; const rollerContainerWidth = roller.parentElement.offsetWidth;
-            const randomOffset = (Math.random() - 0.5) * (itemWidth * 0.8);
-            const targetPosition = (winningIndex * itemWidth) - (rollerContainerWidth / 2) + (itemWidth / 2) + randomOffset;
-            roller.style.transition = 'transform 8s cubic-bezier(0.25, 0.1, 0.2, 1)';
-            roller.style.transform = `translateX(-${targetPosition}px)`;
+
+    // --- MÓDULO DE ELEMENTOS DA UI ---
+    const ui = {
+        views: {
+            auth: document.getElementById('auth-view'),
+            app: document.getElementById('app-view'),
+        },
+        modals: {
+            open: document.getElementById('open-case-modal'),
+            deposit: document.getElementById('deposit-modal'),
+        },
+        auth: {
+            form: document.getElementById('auth-form'),
+            title: document.getElementById('auth-title'),
+            submitBtn: document.getElementById('auth-submit-btn'),
+            switchText: document.getElementById('switch-text'),
+            switchLink: document.getElementById('switch-link'),
+            errorMessage: document.getElementById('error-message'),
+            usernameInput: document.getElementById('username'),
+            passwordInput: document.getElementById('password'),
+        },
+        app: {
+            casesGrid: document.getElementById('cases-grid'),
+            logoutBtn: document.getElementById('logout-btn'),
+            usernameDisplay: document.getElementById('username-display'),
+            balanceDisplay: document.getElementById('balance-display'),
+            activityList: document.getElementById('activity-list'),
+            leaderboardList: document.getElementById('leaderboard-list'),
+        },
+        deposit: {
+            form: document.getElementById('deposit-form'),
+            openBtn: document.getElementById('deposit-btn'),
+            cancelBtn: document.getElementById('cancel-deposit-btn'),
+            message: document.getElementById('deposit-message'),
+            amountInput: document.getElementById('deposit-amount'),
+            cardInput: document.getElementById('card-number'),
+        },
+        caseOpening: {
+            roller: document.getElementById('case-roller'),
+            itemWonDisplay: document.getElementById('item-won-display'),
+            wonItemImg: document.getElementById('item-won-img'),
+            wonItemName: document.getElementById('item-won-name'),
+            wonItemValue: document.getElementById('item-won-value'),
+            wonItemCard: document.getElementById('won-item-card'),
+            claimBtn: document.getElementById('claim-item-btn'),
+        }
+    };
+
+    // --- MÓDULO DA API ---
+    const api = {
+        fetchWithAuth: async (endpoint, options = {}) => {
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.token}`
+            };
+            const response = await fetch(config.API_URL + endpoint, { ...options, headers });
+            
+            if (response.status === 401 || response.status === 403) {
+                helpers.logout();
+                throw new Error('Autenticação falhou. Faça login novamente.');
+            }
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.message || 'Ocorreu um erro.');
+            }
+            return data;
+        },
+        login: (username, password) => fetch(config.API_URL + '/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }),
+        signup: (username, password) => fetch(config.API_URL + '/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) }),
+        getUserProfile: () => api.fetchWithAuth('/me'),
+        getCases: () => api.fetchWithAuth('/boxes'),
+        openCase: (boxId) => api.fetchWithAuth('/open', { method: 'POST', body: JSON.stringify({ boxId }) }),
+        deposit: (amount) => api.fetchWithAuth('/deposit', { method: 'POST', body: JSON.stringify({ amount: parseFloat(amount) }) }),
+    };
+
+    // --- MÓDULO DE RENDERIZAÇÃO ---
+    const render = {
+        updateBalance: (newBalance) => {
+            ui.app.balanceDisplay.textContent = `$${Number(newBalance).toFixed(2)}`;
+        },
+        updateUserProfile: (user) => {
+            state.user = user;
+            ui.app.usernameDisplay.textContent = user.username;
+            render.updateBalance(user.balance);
+        },
+        cases: (cases) => {
+            ui.app.casesGrid.innerHTML = cases.map(c => `
+                <div class="case-card">
+                    <div class="case-card-image-wrapper"><img src="${c.imageUrl}" alt="${c.name}"></div>
+                    <div class="case-card-info">
+                        <h3>${c.name}</h3>
+                        <p class="price">$${c.price.toFixed(2)}</p>
+                        <button class="open-button" data-box-id="${c.id}">Abrir</button>
+                    </div>
+                </div>
+            `).join('');
+        },
+        activityFeed: (act) => {
+            const list = ui.app.activityList;
+            const item = document.createElement('li');
+            item.className = act.rarity;
+            item.innerHTML = `<span>${act.username} ganhou <strong>${act.itemName}</strong></span> <span>$${act.itemValue.toFixed(2)}</span>`;
+            list.prepend(item);
+            if (list.children.length > 7) list.lastChild.remove();
+        },
+        leaderboard: (lb) => {
+            ui.app.leaderboardList.innerHTML = lb.map(u => `<li><span>${u.username}</span> <strong>$${u.balance.toFixed(2)}</strong></li>`).join('');
+        },
+    };
+
+    // --- MÓDULO DE AJUDANTES E UTILITÁRIOS ---
+    const helpers = {
+        showView: (viewName) => {
+            Object.values(ui.views).forEach(el => el.classList.add('hidden'));
+            ui.views[viewName].classList.remove('hidden');
+        },
+        toggleModal: (modalName, show) => {
+            const modal = ui.modals[modalName];
+            if(show) {
+                modal.classList.add('visible');
+                modal.setAttribute('aria-hidden', 'false');
+            } else {
+                modal.classList.remove('visible');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+        },
+        luhnCheck: (val) => {
+            let sum = 0;
+            const arr = String(val).replace(/[^\d]/g, "").split("").reverse().map(x => parseInt(x, 10));
+            if (arr.length === 0) return false;
+            for (let i = 0; i < arr.length; i++) {
+                let bit = arr[i];
+                if (i % 2 !== 0) {
+                    bit *= 2;
+                    if (bit > 9) bit -= 9;
+                }
+                sum += bit;
+            }
+            return sum % 10 === 0;
+        },
+        logout: () => {
+            state.token = null;
+            state.user = null;
+            localStorage.removeItem('token');
+            if (state.websocket) state.websocket.close();
+            window.location.reload();
+        },
+        displayFormError: (form, message) => {
+            const errorElement = form.querySelector('[id$="-message"]');
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.color = 'var(--text-error)';
+            }
+        },
+        displayFormSuccess: (form, message) => {
+            const messageElement = form.querySelector('[id$="-message"]');
+            if(messageElement) {
+                messageElement.textContent = message;
+                messageElement.style.color = 'var(--text-success)';
+            }
+        },
+        clearFormMessage: (form) => {
+            const messageElement = form.querySelector('[id$="-message"]');
+            if(messageElement) messageElement.textContent = '';
+        }
+    };
+
+    // --- MÓDULO DE EVENTOS E LÓGICA DA APLICAÇÃO ---
+    const app = {
+        init: async () => {
+            app.setupEventListeners();
+            if (state.token) {
+                await app.loadApp();
+            } else {
+                helpers.showView('auth');
+            }
+        },
+        loadApp: async () => {
+            try {
+                const user = await api.getUserProfile();
+                render.updateUserProfile(user);
+                const cases = await api.getCases();
+                render.cases(cases);
+                app.setupWebSocket();
+                helpers.showView('app');
+            } catch (error) {
+                console.error(error.message);
+                helpers.logout();
+            }
+        },
+        toggleAuthView: () => {
+            state.isLoginView = !state.isLoginView;
+            ui.auth.title.textContent = state.isLoginView ? 'Login' : 'Criar Conta';
+            ui.auth.submitBtn.textContent = state.isLoginView ? 'Entrar' : 'Cadastrar';
+            ui.auth.switchText.textContent = state.isLoginView ? 'Não tem conta?' : 'Já tem uma conta?';
+            ui.auth.switchLink.textContent = state.isLoginView ? 'Cadastre-se' : 'Faça Login';
+            helpers.clearFormMessage(ui.auth.form);
+        },
+        handleAuthSubmit: async (e) => {
+            e.preventDefault();
+            const username = ui.auth.usernameInput.value;
+            const password = ui.auth.passwordInput.value;
+            helpers.clearFormMessage(ui.auth.form);
+            ui.auth.submitBtn.disabled = true;
+            ui.auth.submitBtn.textContent = 'Aguarde...';
+
+            try {
+                const endpoint = state.isLoginView ? api.login : api.signup;
+                const response = await endpoint(username, password);
+                 const data = await response.json();
+                if (!response.ok) throw new Error(data.message);
+
+                state.token = data.token;
+                localStorage.setItem('token', state.token);
+                await app.loadApp();
+            } catch (error) {
+                helpers.displayFormError(ui.auth.form, error.message);
+            } finally {
+                 ui.auth.submitBtn.disabled = false;
+                 ui.auth.submitBtn.textContent = state.isLoginView ? 'Entrar' : 'Cadastrar';
+            }
+        },
+        handleCaseOpen: async (e) => {
+            if (!e.target.classList.contains('open-button')) return;
+            const button = e.target;
+            button.disabled = true;
+            button.textContent = 'Abrindo...';
+            try {
+                const result = await api.openCase(button.dataset.boxId);
+                render.updateBalance(result.newBalance);
+                app.startCaseOpeningAnimation(result.item, result.randomRoll);
+            } catch (error) {
+                alert(`Erro: ${error.message}`); // Usar um modal de erro seria melhor no futuro
+                button.disabled = false;
+                button.textContent = 'Abrir';
+            }
+        },
+        startCaseOpeningAnimation: (wonItem, rollItems) => {
+            const roller = ui.caseOpening.roller;
+            const itemWonDisplay = ui.caseOpening.itemWonDisplay;
+            
+            roller.innerHTML = rollItems.map(item => `<div class="roller-item ${item.rarity}"><img src="${item.imageUrl}" alt="${item.name}"><span>${item.name}</span></div>`).join('');
+            itemWonDisplay.classList.add('hidden');
+            roller.style.transition = 'none';
+            roller.style.transform = 'translateX(0px)';
+            helpers.toggleModal('open', true);
+
             setTimeout(() => {
-                document.getElementById('item-won-img').src = wonItem.imageUrl; document.getElementById('item-won-name').textContent = wonItem.name; document.getElementById('item-won-value').textContent = `$${wonItem.value.toFixed(2)}`; const card = document.getElementById('won-item-card'); card.className = `won-item-card ${wonItem.rarity}`; itemWonDisplay.classList.remove('hidden');
-            }, 8500);
-        }, 100);
+                const itemWidth = 180 + 10; // item width + margin
+                const winningIndex = 95; // Posição do item vencedor na lista
+                const rollerContainerWidth = roller.parentElement.offsetWidth;
+                const randomOffset = (Math.random() - 0.5) * (itemWidth * 0.8);
+                const targetPosition = (winningIndex * itemWidth) - (rollerContainerWidth / 2) + (itemWidth / 2) + randomOffset;
+                
+                roller.style.transition = 'transform 8s cubic-bezier(0.25, 0.1, 0.2, 1)';
+                roller.style.transform = `translateX(-${targetPosition}px)`;
+
+                setTimeout(() => {
+                    ui.caseOpening.wonItemImg.src = wonItem.imageUrl;
+                    ui.caseOpening.wonItemName.textContent = wonItem.name;
+                    ui.caseOpening.wonItemValue.textContent = `$${wonItem.value.toFixed(2)}`;
+                    const card = ui.caseOpening.wonItemCard;
+                    card.className = `won-item-card ${wonItem.rarity}`;
+                    itemWonDisplay.classList.remove('hidden');
+                }, 8500);
+            }, 100);
+        },
+        handleClaimItem: () => {
+            helpers.toggleModal('open', false);
+            document.querySelectorAll('.open-button:disabled').forEach(btn => {
+                btn.disabled = false;
+                btn.textContent = 'Abrir';
+            });
+        },
+        handleDepositSubmit: async (e) => {
+            e.preventDefault();
+            helpers.clearFormMessage(ui.deposit.form);
+            const amount = ui.deposit.amountInput.value;
+            const cardNumber = ui.deposit.cardInput.value;
+
+            if (!helpers.luhnCheck(cardNumber)) {
+                helpers.displayFormError(ui.deposit.form, 'Número do cartão inválido.');
+                return;
+            }
+
+            try {
+                const result = await api.deposit(amount);
+                render.updateBalance(result.newBalance);
+                helpers.displayFormSuccess(ui.deposit.form, 'Depósito bem-sucedido!');
+                setTimeout(() => {
+                    helpers.toggleModal('deposit', false);
+                    helpers.clearFormMessage(ui.deposit.form);
+                    e.target.reset();
+                }, 1500);
+            } catch (error) {
+                helpers.displayFormError(ui.deposit.form, `Erro: ${error.message}`);
+            }
+        },
+        setupWebSocket: () => {
+            state.websocket = new WebSocket(config.WS_URL);
+            state.websocket.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'activity') render.activityFeed(data.payload);
+                    if (data.type === 'leaderboard') render.leaderboard(data.payload);
+                } catch (e) {
+                    console.error("Erro ao processar mensagem do WebSocket:", e);
+                }
+            };
+            // Tenta reconectar se a conexão for fechada
+            state.websocket.onclose = () => {
+                console.log('WebSocket desconectado. Tentando reconectar em 5 segundos...');
+                setTimeout(app.setupWebSocket, 5000);
+            };
+            state.websocket.onerror = (err) => {
+                console.error('Erro no WebSocket:', err);
+                state.websocket.close(); // Isso vai acionar o onclose para reconectar
+            };
+        },
+        setupEventListeners: () => {
+            ui.auth.switchLink.addEventListener('click', app.toggleAuthView);
+            ui.auth.form.addEventListener('submit', app.handleAuthSubmit);
+            ui.app.logoutBtn.addEventListener('click', helpers.logout);
+            ui.app.casesGrid.addEventListener('click', app.handleCaseOpen);
+            ui.caseOpening.claimBtn.addEventListener('click', app.handleClaimItem);
+            
+            // Eventos de depósito
+            ui.deposit.openBtn.addEventListener('click', () => helpers.toggleModal('deposit', true));
+            ui.deposit.cancelBtn.addEventListener('click', () => helpers.toggleModal('deposit', false));
+            ui.deposit.form.addEventListener('submit', app.handleDepositSubmit);
+        },
     };
-    document.getElementById('claim-item-btn').addEventListener('click', () => { hideModal('open'); const openButtons = document.querySelectorAll('.open-button:disabled'); openButtons.forEach(btn => { btn.disabled = false; btn.textContent = 'Abrir'; }); });
-    document.getElementById('deposit-btn').addEventListener('click', () => showModal('deposit'));
-    document.getElementById('cancel-deposit-btn').addEventListener('click', () => hideModal('deposit'));
-    document.getElementById('deposit-form').addEventListener('submit', async (e) => { e.preventDefault(); const amount = document.getElementById('deposit-amount').value; const cardNumber = document.getElementById('card-number').value; const messageEl = document.getElementById('deposit-message'); messageEl.textContent = ''; if (!luhnCheck(cardNumber)) { messageEl.style.color = '#f87171'; messageEl.textContent = 'Número do cartão inválido.'; return; } try { const result = await fetchWithAuth('/deposit', { method: 'POST', body: JSON.stringify({ amount }) }); document.getElementById('balance-display').textContent = `$${result.newBalance.toFixed(2)}`; messageEl.style.color = 'var(--text-success)'; messageEl.textContent = 'Depósito bem-sucedido!'; setTimeout(() => { hideModal('deposit'); messageEl.textContent = ''; e.target.reset(); }, 1500); } catch (error) { messageEl.style.color = '#f87171'; messageEl.textContent = `Erro: ${error.message}`; } });
-    const luhnCheck = val => { let sum = 0; let arr = String(val).replace(/[^\d]/g, "").split("").reverse().map(x => parseInt(x, 10)); for (let i = 0; i < arr.length; i++) { if (i % 2 !== 0) { arr[i] *= 2; if (arr[i] > 9) arr[i] -= 9; } sum += arr[i]; } return sum > 0 && sum % 10 === 0; };
-    function setupWebSocket() { const ws = new WebSocket(WS_URL); ws.onmessage = (event) => { const data = JSON.parse(event.data); if (data.type === 'activity') updateActivityFeed(data.payload); if (data.type === 'leaderboard') updateLeaderboard(data.payload); }; ws.onclose = () => setTimeout(setupWebSocket, 5000); }
-    const updateActivityFeed = (act) => { const list = document.getElementById('activity-list'); const item = document.createElement('li'); item.className = act.rarity; item.innerHTML = `<span>${act.username} ganhou <strong>${act.itemName}</strong></span> <span>$${act.itemValue.toFixed(2)}</span>`; list.prepend(item); if (list.children.length > 7) list.lastChild.remove(); };
-    const updateLeaderboard = (lb) => { const list = document.getElementById('leaderboard-list'); list.innerHTML = lb.map(u => `<li><span>${u.username}</span> <strong>$${u.balance.toFixed(2)}</strong></li>`).join(''); };
-    init();
+
+    // --- INICIALIZAÇÃO ---
+    app.init();
 })();
 </script>
 </body>
-
 </html>
